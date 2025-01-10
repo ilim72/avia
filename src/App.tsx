@@ -3,9 +3,11 @@ import { Box, Container, Typography } from '@mui/material';
 import { flightsData } from './types.ts';
 import FilterControls from './component/FilterControls/FilterControls.tsx';
 import FlightCard from './component/FlightCard/FlightCard.tsx';
+import flightIcon from './assets/Plane.svg';
+import './index.css';
 
 const App = () => {
-  const [selectedStops, setSelectedStops] = useState<string>('Все');
+  const [selectedStops, setSelectedStops] = useState<string[]>(['Все']);
   const [currency, setCurrency] = useState<string>('RUB');
 
   const conversionRate = useMemo(() => {
@@ -22,19 +24,22 @@ const App = () => {
   const calculatePrice = (price: number) => (price * conversionRate).toFixed(2);
 
   const filteredFlights = useMemo(() => {
+    if (selectedStops.includes('Все')) {
+      return flightsData.sort((a, b) => a.price - b.price);
+    }
+
     return flightsData
-      .filter((flight) => selectedStops === 'Все' || flight.stops === selectedStops)
+      .filter((flight) => selectedStops.includes(flight.stops))
       .sort((a, b) => a.price - b.price);
   }, [selectedStops]);
 
   return (
     <Container sx={{ padding: 3 }}>
-      <Typography variant="h4" color="primary" gutterBottom>
-        Авиабилеты
-      </Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'center', marginBottom: 3 }}>
+        <img src={flightIcon} alt="flight-icon" width="90px" height="90px" />
+      </Box>
 
       <Box sx={{ display: 'flex', gap: 3 }}>
-        {/* Левая панель */}
         <FilterControls
           selectedStops={selectedStops}
           currency={currency}
@@ -42,7 +47,6 @@ const App = () => {
           onCurrencyChange={setCurrency}
         />
 
-        {/* Карточки рейсов */}
         <Box sx={{ flex: 1 }}>
           {filteredFlights.length > 0 ? (
             filteredFlights.map((flight) => (
